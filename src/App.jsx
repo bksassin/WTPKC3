@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { auth } from './firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { db } from './firebase';
-import { onSnapshot, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { onSnapshot, doc, setDoc, serverTimestamp, } from 'firebase/firestore';
 import PokemonCard from './components/PokemonCard';
 import SignIn from './components/SignIn';
 import LogOut from './components/LogOut';
-import { onAuthStateChanged } from 'firebase/auth';
+import Leaderboard from './Leaderboard';
+
 
 function App() {
   const [user] = useAuthState(auth);
   const [score, setScore] = useState('No Score');
   const [loading, setLoading] = useState(true);
 
-  
   
   useEffect(() => {
     if (user) {
@@ -35,7 +35,6 @@ function App() {
     }
   }, [user]);
 
-  
   
   return (
     <div className='flex justify-center m-24'>
@@ -79,12 +78,16 @@ function App() {
           <p className='text-xs mt-5 text-gray-100'>Login before you start to save your highscore.</p>
         </div>
         <div className='mt-10 mb-auto'>{user ? <LogOut /> : <SignIn />}</div>
+        <div className='flex justify-center m-24'>
+       </div>
+       <Leaderboard />
         <button className='text-center underline text-sm text-yellow-700'>LEADER BOARD</button>
       </div>
       {/* End of Login and user info */}
       <div>
         <PokemonCard />
       </div>
+     
     </div>
   );
 }
