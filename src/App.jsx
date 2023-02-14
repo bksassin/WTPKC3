@@ -75,13 +75,13 @@ function App() {
           </p>
           <p className='text-xs mt-5 text-gray-100'>Earn <span className='text-green-500'>10 points</span> for guessing the correct Pokemon name and <span className='text-green-500'>15 points</span> for guessing the correct set name.</p>
           <p className='text-xs mt-2 text-gray-100'><span className='text-red-400'>Be careful</span> - two wrong answers in a row and you'll have to start over.</p>
-          <p className='text-xs mt-5 text-gray-100'>Login before you start to save your highscore.</p>
+          {user ? '' : <p className='text-xs mt-5 text-gray-100'>Login before you start to save your highscore.</p>} 
         </div>
         <div className='mt-10 mb-auto'>{user ? <LogOut /> : <SignIn />}</div>
-        <div className='flex justify-center m-24'>
+        <div className='flex justify-center m-5'>
        </div>
+       <button className='text-center underline text-sm text-yellow-700'>LEADER BOARD</button>
        <Leaderboard />
-        <button className='text-center underline text-sm text-yellow-700'>LEADER BOARD</button>
       </div>
       {/* End of Login and user info */}
       <div>

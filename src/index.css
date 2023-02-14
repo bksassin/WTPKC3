@@ -179,6 +179,27 @@ body {
   animation: flash-red 0.5s linear;
 }
 
+.leaderboard-first {
+  font-weight: bold;
+  color: #ffcc00;
+}
+
+.leaderboard-second {
+  font-weight: bold;
+  color: #cccccc;
+}
+
+.leaderboard-third {
+  font-weight: bold;
+  color: #996633;
+}
+
+.leaderboard-rank {
+  font-weight: bold;
+  color: #333333;
+}
+
+
 @keyframes flash-red {
   0% {
     background-color: red;
