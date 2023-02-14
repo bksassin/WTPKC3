@@ -19,7 +19,7 @@ function App () {
     src={auth.currentUser.photoURL} alt="Rounded avatar" /> : ''}
     </div>
     <div>
-    {user ? <p className='text-white font-bold'>{auth.currentUser.email}</p> : ''}
+    {user ? <p className='text-white font-bold'>{auth.currentUser.displayName}</p> : ''}
     </div>
     <div>
     <p className='mt-5'>YOUR HIGHEST SCORE</p>

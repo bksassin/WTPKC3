@@ -157,7 +157,7 @@ body {
   background: #43B0F2;
   border-radius: 15px;
   height: 100%;
-  padding: 25px 15px 0;
+  padding: 10px 15px 0;
 }
 
 .pokemon-name {
@@ -173,4 +173,17 @@ body {
 
 .blurred-image {
   filter: blur(8px);
+}
+
+.flash-red {
+  animation: flash-red 0.5s linear;
+}
+
+@keyframes flash-red {
+  0% {
+    background-color: red;
+  }
+  100% {
+    background-color: initial;
+  }
 }

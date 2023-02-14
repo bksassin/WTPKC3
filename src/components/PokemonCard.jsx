@@ -1,5 +1,4 @@
 import React, {useState, useEffect, useMemo} from 'react';
-import SignIn from './SignIn';
 
 const App = () => {
     const [card, setCard] = useState({});
@@ -13,14 +12,21 @@ const App = () => {
     const [correctCardName, setCorrectCardName] = useState(false);
     const [correctCardSet, setCorrectCardSet] = useState(false);
     const [score, setScore] = useState(0);
+    const [incorrectClicks, setIncorrectClicks] = useState(0);
+    const [clickedOptions, setClickedOptions] = useState([]);
+    const [correctOptionClicked, setCorrectOptionClicked] = useState(false);
+    const [gameOver, setGameOver] = useState(false);
     const cardBack = require('../assets/card.png'); // with require
 
     const fetchData = useMemo(() => {
         async function fetchData() {
             setLoading(true);
             setOptions([]);
+            setIncorrectClicks(0);
             setCorrectCardName(false); // reset the correct card name state
             setCorrectCardSet(false); // reset the correct card set state
+            setCorrectOptionClicked(false); // reset the correct option state
+            setClickedOptions([]); // reset the clicked options state
             const response = await fetch("https://api.pokemontcg.io/v2/cards");
             const data = await response.json();
             const randomIndex = Math.floor(Math.random() * data.data.length);
@@ -84,22 +90,36 @@ const App = () => {
         }
     }, [cardName, getRandomOptions]);
 
+
     const handleButtonPress = () => {
         setCorrectCardSet(false);
         fetchData();
     };
 
     const handleOptionClick = (option) => {
-        if (option === cardName) {
-          setBlurred(false);
-          setCorrectCardName(true);
-          setScore(score + 10);
-        } else if (option === cardSet) {
-          setCorrectCardSet(true);
-          setScore(score + 15);
+      if (clickedOptions.includes(option)) {
+        return;
+      }
+      if (option === cardName) {
+        setBlurred(false);
+        setCorrectCardName(true);
+        setScore(score + 10);
+        setCorrectOptionClicked(true); // set the correct option as clicked
+      } else if (option === cardSet) {
+        setCorrectCardSet(true);
+        setScore(score + 15);
+        setCorrectOptionClicked(true); // set the correct option as clicked
+      } else {
+        setIncorrectClicks(incorrectClicks + 1);
+        if (incorrectClicks === 2) {
+          setScore(0);
+          setIncorrectClicks(0);
+          setGameOver(true);
         }
-      };
-      
+      }
+      setClickedOptions([...clickedOptions, option]);
+    };
+  
 
     return (
         <div className="pokedex">
@@ -154,14 +174,19 @@ const App = () => {
 </div>
                             <div className='text-center text-sm flex justify-between'>
                             {
-  !loading && setNameOptions.length > 0 && setNameOptions.map((option, index) => (
-    <button key={index}
-      className="set-name text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm p-2 m-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
-      onClick={() => handleOptionClick(option)}>
+    !loading && setNameOptions.length > 0 && incorrectClicks !== 2 && setNameOptions.map((option, index) => (
+      <button
+      key={index}
+      className={`set-name text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm p-2 m-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700${
+        incorrectClicks === 1 ? "flash-red" : ""
+      }`}
+      onClick={() => handleOptionClick(option)}
+    >
       {option}
     </button>
-  ))
-}                       
+    ))
+  }
+                      
                             </div>
                   
                             </div>
@@ -177,16 +202,29 @@ const App = () => {
             <div className="right-container">
                 <div className="right-container__black">
                     <div className="right-container__screen flex flex-col content-between space-y-6 text-xl">
-                        {
-                        !loading && options.length > 0 && options.map((option, index) => (
-                            <button key={index}
-                                className="pokemon-name"
-                                onClick={
-                                    () => handleOptionClick(option)
-                            }>
-                                {option}</button>
-                        ))
-                    } </div>
+                    {!loading && options.length > 0 && incorrectClicks !== 2 && !correctOptionClicked && (
+  <div className="right-container__screen flex flex-col content-between space-y-6 text-xl">
+    {options.map((option, index) => (
+      <button
+        key={index}
+        className={`pokemon-name ${
+          incorrectClicks === 1 ? "flash-red" : ""
+        }`}
+        onClick={() => handleOptionClick(option)}
+      >
+        {option}
+      </button>
+    ))}
+  </div>
+)}
+{incorrectClicks === 2 && (
+  <div className="pop-up mt-2 text-center">
+    <div className="pop-up-content">
+      Sorry, you have to start over now.
+    </div>
+  </div>
+)}
+</div>
                 </div>
                 <div className="right-container__buttons flex flex-col mt-10p">
                 {correctCardName && (
@@ -196,9 +234,24 @@ const App = () => {
     </div>
   </div>
 )}
-                <button className={`pokemon-name bg-green-400 mt-5 ${loading ? 'cursor-not-allowed opacity-50' : ''}`} disabled={loading} onClick={handleButtonPress}>
-                    {loading ? 'Loading...' : 'LOAD NEW CARD'}
-                </button>
+<button
+  className={`pokemon-name bg-green-400 mt-5 ${
+    loading ? "cursor-not-allowed opacity-50" : ""
+  }`}
+  disabled={loading}
+  onClick={() => {
+    if (incorrectClicks === 2) {
+      window.location.reload();
+    } else {
+      handleButtonPress();
+    }
+  }}
+>
+  {incorrectClicks === 2 ? "Restart" : "Load New Card"}
+</button>
+
+
+
                 </div>
             </div>
         </div>
