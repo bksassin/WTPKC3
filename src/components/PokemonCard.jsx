@@ -1,6 +1,8 @@
 import React, {useState, useEffect, useMemo} from 'react';
 import {db, auth} from '../firebase';
-import {doc, getDoc, updateDoc, setDoc} from 'firebase/firestore';
+import {doc, getDoc, updateDoc, setDoc, onSnapshot, serverTimestamp} from 'firebase/firestore';
+import { useAuthState } from 'react-firebase-hooks/auth';
+
 
 
 const App = () => {
@@ -19,8 +21,10 @@ const App = () => {
     const [incorrectClicks, setIncorrectClicks] = useState(0);
     const [clickedOptions, setClickedOptions] = useState([]);
     const [correctOptionClicked, setCorrectOptionClicked] = useState(false);
-    const [scores, setScores] = useState([]);
+    const [scores, setScores] = useState();
     const cardBack = require('../assets/card.png'); // with require
+    const [user] = useAuthState(auth);
+
 
     const fetchData = async () => {
       setLoading(true);
@@ -77,7 +81,25 @@ const fetchSetNameOptions = useMemo(() => {
   return fetchSetNameOptions;
 }, [apiData, cardSet]);
 
-
+useEffect(() => {
+  if (user) {
+    const { uid, displayName, email } = auth.currentUser;
+    const docRef = doc(db, 'scores', uid);
+    const scoreData = {
+      name: displayName,
+      email: email,
+      date: serverTimestamp()
+    };
+    setDoc(docRef, scoreData, { merge: true });
+    
+    const unsubscribe = onSnapshot(docRef, (doc) => {
+      const data = doc.data();
+      setScore(data.score || 0);
+      setLoading(false);
+    });
+    return unsubscribe;
+  }
+}, [user]);
       
 useEffect(() => {
   if (cardName && apiData) {
@@ -85,6 +107,12 @@ useEffect(() => {
       getRandomOptions();
   }
 }, [cardName, apiData]);
+
+useEffect(() => {
+  if (!user) {
+    setScore(0);
+  }
+}, [user]);
 
 
 
@@ -112,7 +140,7 @@ useEffect(() => {
             }
           });
         }
-        setScore(score + 10);
+        setScore(prevScore => prevScore + 10);
         setCorrectOptionClicked(true); // set the correct option as clicked
       } else if (option === cardSet) {
         setCorrectCardSet(true);
@@ -123,10 +151,12 @@ useEffect(() => {
           getDoc(docRef).then((docSnapshot) => {
             if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
               updateDoc(docRef, { score: newScore });
+            } else {
+              setDoc(docRef, { score: newScore });
             }
           });
         }
-        setScore(score + 15);
+        setScore(prevScore => prevScore + 15);
         setCorrectOptionClicked(true); // set the correct option as clicked
       } else {
         setIncorrectClicks(incorrectClicks + 1);
@@ -135,6 +165,7 @@ useEffect(() => {
           setIncorrectClicks(0);
         }
       }
+      
       setClickedOptions([...clickedOptions, option]);
     };
     

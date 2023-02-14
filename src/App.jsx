@@ -28,7 +28,7 @@ function App() {
       
       const unsubscribe = onSnapshot(docRef, (doc) => {
         const data = doc.data();
-        setScore(data.score);
+        setScore(data.score || 0);
         setLoading(false);
       });
       return unsubscribe;
