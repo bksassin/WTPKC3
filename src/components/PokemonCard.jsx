@@ -24,6 +24,7 @@ const App = () => {
     const [scores, setScores] = useState();
     const cardBack = require('../assets/card.png'); // with require
     const [user] = useAuthState(auth);
+    const [currentScore, setCurrentScore] = useState(0);
 
 
     const fetchData = async () => {
@@ -44,6 +45,7 @@ const App = () => {
       setSymbolUrl(data.data[randomIndex].set.images.symbol);
       setLoading(false);
       setBlurred(true);
+
   };
   
 
@@ -91,15 +93,10 @@ useEffect(() => {
       date: serverTimestamp()
     };
     setDoc(docRef, scoreData, { merge: true });
-    
-    const unsubscribe = onSnapshot(docRef, (doc) => {
-      const data = doc.data();
-      setScore(data.score || 0);
-      setLoading(false);
-    });
-    return unsubscribe;
   }
+  setScore(0); // Reset score to 0
 }, [user]);
+
       
 useEffect(() => {
   if (cardName && apiData) {
@@ -125,49 +122,65 @@ useEffect(() => {
       if (clickedOptions.includes(option)) {
         return;
       }
+      if (setNameOptions.includes(option)) {
+        setSetNameOptions([]);
+        if (option === cardSet) {
+          setCorrectCardSet(true);
+          setScore(prevScore => prevScore + 15);
+          setCurrentScore(prevScore => prevScore + 15);
+          if (user) {
+            const newScore = currentScore + 15;
+            const uid = auth.currentUser.uid;
+            const docRef = doc(db, 'scores', uid);
+            getDoc(docRef).then((docSnapshot) => {
+              if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
+                updateDoc(docRef, { score: newScore });
+              }
+            });
+          }
+        } else {
+          setIncorrectClicks(incorrectClicks + 1);
+          if (incorrectClicks === 2) {
+            setScore(0);
+            setCurrentScore(0);
+            setIncorrectClicks(0);
+          }
+        }
+        setClickedOptions([...clickedOptions, option]);
+        return;
+      }
       if (option === cardName) {
         setBlurred(false);
         setCorrectCardName(true);
-        if (auth.currentUser) {
-          const newScore = score + 10;
-          const uid = auth.currentUser.uid;
-          const docRef = doc(db, 'scores', uid);
-          getDoc(docRef).then((docSnapshot) => {
-            if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
-              updateDoc(docRef, { score: newScore });
-            } else {
-              setDoc(docRef, { score: newScore });
-            }
-          });
-        }
         setScore(prevScore => prevScore + 10);
-        setCorrectOptionClicked(true); // set the correct option as clicked
-      } else if (option === cardSet) {
-        setCorrectCardSet(true);
-        if (auth.currentUser) {
-          const newScore = score + 15;
+        setCurrentScore(prevScore => prevScore + 10);
+        setCorrectOptionClicked(true);
+        if (user) {
+          const newScore = currentScore + 10;
           const uid = auth.currentUser.uid;
           const docRef = doc(db, 'scores', uid);
           getDoc(docRef).then((docSnapshot) => {
             if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
               updateDoc(docRef, { score: newScore });
-            } else {
-              setDoc(docRef, { score: newScore });
             }
           });
         }
-        setScore(prevScore => prevScore + 15);
-        setCorrectOptionClicked(true); // set the correct option as clicked
       } else {
         setIncorrectClicks(incorrectClicks + 1);
         if (incorrectClicks === 2) {
           setScore(0);
+          setCurrentScore(0);
           setIncorrectClicks(0);
         }
       }
       
       setClickedOptions([...clickedOptions, option]);
     };
+    
+    
+    
+    
+    
     
     
     
@@ -215,7 +228,7 @@ useEffect(() => {
                             <div className='text-center text-sm'>
   {correctCardSet ? (
     <div className="pop-up">
-      <div className="pop-up-content">
+      <div className="pop-up-content font-bold text-lg">
         That's Correct!
       </div>
     </div>
@@ -268,7 +281,7 @@ useEffect(() => {
 )}
 {incorrectClicks === 2 && (
   <div className="pop-up mt-2 text-center">
-    <div className="pop-up-content">
+    <div className="pop-up-content font-bold text-lg">
       Sorry, you have to start over now.
     </div>
   </div>
@@ -278,7 +291,7 @@ useEffect(() => {
                 <div className="right-container__buttons flex flex-col mt-10p">
                 {correctCardName && (
   <div className="pop-up mt-2 text-center">
-    <div className="pop-up-content">
+    <div className="pop-up-content font-bold text-lg">
       That's Correct!
     </div>
   </div>
