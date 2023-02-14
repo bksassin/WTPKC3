@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react';
 
 const App = () => {
+    const [apiData, setApiData] = useState(null);
     const [card, setCard] = useState({});
     const [cardName, setCardName] = useState('');
     const [cardSet, setCardSet] = useState('');
@@ -15,80 +16,75 @@ const App = () => {
     const [incorrectClicks, setIncorrectClicks] = useState(0);
     const [clickedOptions, setClickedOptions] = useState([]);
     const [correctOptionClicked, setCorrectOptionClicked] = useState(false);
-    const [gameOver, setGameOver] = useState(false);
     const cardBack = require('../assets/card.png'); // with require
 
-    const fetchData = useMemo(() => {
-        async function fetchData() {
-            setLoading(true);
-            setOptions([]);
-            setIncorrectClicks(0);
-            setCorrectCardName(false); // reset the correct card name state
-            setCorrectCardSet(false); // reset the correct card set state
-            setCorrectOptionClicked(false); // reset the correct option state
-            setClickedOptions([]); // reset the clicked options state
-            const response = await fetch("https://api.pokemontcg.io/v2/cards");
-            const data = await response.json();
-            const randomIndex = Math.floor(Math.random() * data.data.length);
-            setCard(data.data[randomIndex]);
-            setCardName(data.data[randomIndex].name);
-            setCardSet(data.data[randomIndex].set.name);
-            setSymbolUrl(data.data[randomIndex].set.images.symbol);
-            setLoading(false);
-            setBlurred(true);
-        }
-        return fetchData;
-    }, []);
+    const fetchData = async () => {
+      setLoading(true);
+      setOptions([]);
+      setIncorrectClicks(0);
+      setCorrectCardName(false);
+      setCorrectCardSet(false);
+      setCorrectOptionClicked(false);
+      setClickedOptions([]);
+      const response = await fetch("https://api.pokemontcg.io/v2/cards?fields=name,set.name,set.images.symbol,images.small");
+      const data = await response.json();
+      setApiData(data);
+      const randomIndex = Math.floor(Math.random() * data.data.length);
+      setCard(data.data[randomIndex]);
+      setCardName(data.data[randomIndex].name);
+      setCardSet(data.data[randomIndex].set.name);
+      setSymbolUrl(data.data[randomIndex].set.images.symbol);
+      setLoading(false);
+      setBlurred(true);
+  };
+  
 
-    const getRandomOptions = useMemo(() => {
-        async function getRandomOptions() {
-            if (!loading) {
-                const response = await fetch("https://api.pokemontcg.io/v2/cards");
-                const data = await response.json();
-                let randomOptions = [];
-                while (randomOptions.length < 4) {
-                    const randomIndex = Math.floor(Math.random() * data.data.length);
-                    if (randomOptions.indexOf(data.data[randomIndex].name) === -1) {
-                        randomOptions.push(data.data[randomIndex].name);
-                    }
+  const getRandomOptions = useMemo(() => {
+    async function getRandomOptions() {
+        if (apiData) {
+            let randomOptions = [];
+            while (randomOptions.length < 4) {
+                const randomIndex = Math.floor(Math.random() * apiData.data.length);
+                if (randomOptions.indexOf(apiData.data[randomIndex].name) === -1) {
+                    randomOptions.push(apiData.data[randomIndex].name);
                 }
-                randomOptions[Math.floor(Math.random() * 4)] = cardName;
-                setOptions(randomOptions);
             }
+            randomOptions[Math.floor(Math.random() * 4)] = cardName;
+            setOptions(randomOptions);
         }
-        return getRandomOptions;
-    }, [loading, cardName]);
+    }
+    return getRandomOptions;
+}, [apiData, cardName]);
 
-    const fetchSetNameOptions = useMemo(() => {
-        async function fetchSetNameOptions() {
-          if (!loading) {
-            const response = await fetch("https://api.pokemontcg.io/v2/sets");
-            const data = await response.json();
-            let setNameOptionList = [];
-            while (setNameOptionList.length < 3) {
-              const randomIndex = Math.floor(Math.random() * data.data.length);
-              if (setNameOptionList.indexOf(data.data[randomIndex].name) === -1) {
-                setNameOptionList.push(data.data[randomIndex].name);
+const fetchSetNameOptions = useMemo(() => {
+  async function fetchSetNameOptions() {
+      if (apiData) {
+          let setNameOptionList = [];
+          while (setNameOptionList.length < 3) {
+              const randomIndex = Math.floor(Math.random() * apiData.data.length);
+              if (setNameOptionList.indexOf(apiData.data[randomIndex].set.name) === -1) {
+                  setNameOptionList.push(apiData.data[randomIndex].set.name);
               }
-            }
-            setNameOptionList[Math.floor(Math.random() * 3)] = cardSet;
-            setSetNameOptions(setNameOptionList);
           }
-        }
-        return fetchSetNameOptions;
-      }, [loading, cardSet]);
+          setNameOptionList[Math.floor(Math.random() * 3)] = cardSet;
+          setSetNameOptions(setNameOptionList);
+      }
+  }
+  return fetchSetNameOptions;
+}, [apiData, cardSet]);
+
       
-      useEffect(() => {
-        if (cardName) {
-          fetchSetNameOptions();
-        }
-      }, [cardName, fetchSetNameOptions]);
-    
-    useEffect(() => {
-        if (cardName) {
-            getRandomOptions();
-        }
-    }, [cardName, getRandomOptions]);
+useEffect(() => {
+  if (cardName && apiData) {
+      fetchSetNameOptions();
+  }
+}, [cardName, apiData]);
+
+useEffect(() => {
+  if (cardName && apiData) {
+      getRandomOptions();
+  }
+}, [cardName, apiData]);
 
 
     const handleButtonPress = () => {
@@ -114,13 +110,11 @@ const App = () => {
         if (incorrectClicks === 2) {
           setScore(0);
           setIncorrectClicks(0);
-          setGameOver(true);
         }
       }
       setClickedOptions([...clickedOptions, option]);
     };
   
-
     return (
         <div className="pokedex">
             <div className="left-container">
@@ -173,19 +167,17 @@ const App = () => {
   )}
 </div>
                             <div className='text-center text-sm flex justify-between'>
-                            {
-    !loading && setNameOptions.length > 0 && incorrectClicks !== 2 && setNameOptions.map((option, index) => (
-      <button
-      key={index}
-      className={`set-name text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm p-2 m-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700${
-        incorrectClicks === 1 ? "flash-red" : ""
-      }`}
-      onClick={() => handleOptionClick(option)}
-    >
-      {option}
-    </button>
-    ))
-  }
+                            {!loading && setNameOptions.length > 0 && incorrectClicks !== 2 && setNameOptions.map((option, index) => (
+  <button
+    key={index}
+    className={`set-name text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm p-2 m-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700${
+      incorrectClicks === 1 ? "flash-red" : ""
+    }`}
+    onClick={() => handleOptionClick(option)}
+  >
+    {option}
+  </button>
+))}
                       
                             </div>
                   
