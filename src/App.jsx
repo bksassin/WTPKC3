@@ -39,7 +39,7 @@ function App() {
   return (
     <div className='flex justify-center m-24'>
       {/* Start of Login and user info */}
-      <div className='bg-[#253d4f] p-5 w-72 flex flex-col'>
+      <div id="menu" style={{ maxHeight: '690px' }} className='bg-[#253d4f] p-5 w-1/5 flex flex-col'>
         <div>
           {user ? (
             <img
@@ -81,7 +81,9 @@ function App() {
         <div className='flex justify-center m-5'>
        </div>
        <button className='text-center underline text-sm text-yellow-700'>LEADER BOARD</button>
+       <div style={{ overflowY: 'auto' }}>
        <Leaderboard />
+       </div>
       </div>
       {/* End of Login and user info */}
       <div>
