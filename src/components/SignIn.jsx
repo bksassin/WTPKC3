@@ -11,7 +11,7 @@ const googleSignIn = () => {
 
 const SignIn = () => {
     return (
-        <div className="bg-black">
+        <div className="">
             < GoogleButton onClick={googleSignIn} />
         </div>
     )

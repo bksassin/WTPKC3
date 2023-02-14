@@ -40,7 +40,7 @@ function App() {
   return (
     <div className='flex justify-center m-24'>
       {/* Start of Login and user info */}
-      <div className='bg-[#253d4f] p-5 w-64'>
+      <div className='bg-[#253d4f] p-5 w-72 flex flex-col'>
         <div>
           {user ? (
             <img
@@ -67,17 +67,19 @@ function App() {
             <p className='text-yellow-500'>{score}</p>
           )}
           </div> : ''}
+
+          {user ? <p className='mt-5 font-bold text-lg text-[#9333ea]'>WHOS THAT POKEMON?!</p> : <p className='font-bold text-white mt-5'>Welcome to the <span className='text-[#9333ea]'>PACKADDX</span> Pokemon Guessing Game!</p>
+ }
           
-          <p className='font-bold text-white mt-5'>Do you know your Pokemon!?</p>
           <p className='text-sm mt-5 text-white'>
-            Can you guess the pokemons name from the blurred card? What about the Set name from only
-            the symbol?
+          Guess the name of the blurred Pokemon card and the set it's from based on the symbol.
           </p>
-          <p className='text-xs mt-5 text-yellow-200'>Correct Pokemon Name = 10 Points</p>
-          <p className='text-xs text-yellow-200'>Correct Set Name = 15 Points</p>
-          <p className='text-xs mt-2 text-yellow-200'>You can only have 2 wrong answers before restarting</p>
+          <p className='text-xs mt-5 text-gray-100'>Earn <span className='text-green-500'>10 points</span> for guessing the correct Pokemon name and <span className='text-green-500'>15 points</span> for guessing the correct set name.</p>
+          <p className='text-xs mt-2 text-gray-100'><span className='text-red-400'>Be careful</span> - two wrong answers in a row and you'll have to start over.</p>
+          <p className='text-xs mt-5 text-gray-100'>Login before you start to save your highscore.</p>
         </div>
-        <div className='mt-10'>{user ? <LogOut /> : <SignIn />}</div>
+        <div className='mt-10 mb-auto'>{user ? <LogOut /> : <SignIn />}</div>
+        <button className='text-center underline text-sm text-yellow-700'>LEADER BOARD</button>
       </div>
       {/* End of Login and user info */}
       <div>

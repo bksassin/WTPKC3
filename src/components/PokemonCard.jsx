@@ -100,29 +100,33 @@ useEffect(() => {
       if (option === cardName) {
         setBlurred(false);
         setCorrectCardName(true);
-        const newScore = score + 10;
-        const uid = auth.currentUser.uid;
-        const docRef = doc(db, 'scores', uid);
-        getDoc(docRef).then((docSnapshot) => {
-          if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
-            updateDoc(docRef, { score: newScore });
-          } else {
-            setDoc(docRef, { score: newScore });
-          }
-        });
-        setScore(newScore);
+        if (auth.currentUser) {
+          const newScore = score + 10;
+          const uid = auth.currentUser.uid;
+          const docRef = doc(db, 'scores', uid);
+          getDoc(docRef).then((docSnapshot) => {
+            if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
+              updateDoc(docRef, { score: newScore });
+            } else {
+              setDoc(docRef, { score: newScore });
+            }
+          });
+        }
+        setScore(score + 10);
         setCorrectOptionClicked(true); // set the correct option as clicked
       } else if (option === cardSet) {
         setCorrectCardSet(true);
-        const newScore = score + 15;
-        const uid = auth.currentUser.uid;
-        const docRef = doc(db, 'scores', uid);
-        getDoc(docRef).then((docSnapshot) => {
-          if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
-            updateDoc(docRef, { score: newScore });
-          }
-        });
-        setScore(newScore);
+        if (auth.currentUser) {
+          const newScore = score + 15;
+          const uid = auth.currentUser.uid;
+          const docRef = doc(db, 'scores', uid);
+          getDoc(docRef).then((docSnapshot) => {
+            if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
+              updateDoc(docRef, { score: newScore });
+            }
+          });
+        }
+        setScore(score + 15);
         setCorrectOptionClicked(true); // set the correct option as clicked
       } else {
         setIncorrectClicks(incorrectClicks + 1);
@@ -133,6 +137,7 @@ useEffect(() => {
       }
       setClickedOptions([...clickedOptions, option]);
     };
+    
     
     
   
