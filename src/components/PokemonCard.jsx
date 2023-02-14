@@ -1,4 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react';
+import {db, auth} from '../firebase';
+import {doc, getDoc, updateDoc, setDoc} from 'firebase/firestore';
+
 
 const App = () => {
     const [apiData, setApiData] = useState(null);
@@ -16,6 +19,7 @@ const App = () => {
     const [incorrectClicks, setIncorrectClicks] = useState(0);
     const [clickedOptions, setClickedOptions] = useState([]);
     const [correctOptionClicked, setCorrectOptionClicked] = useState(false);
+    const [scores, setScores] = useState([]);
     const cardBack = require('../assets/card.png'); // with require
 
     const fetchData = async () => {
@@ -26,7 +30,7 @@ const App = () => {
       setCorrectCardSet(false);
       setCorrectOptionClicked(false);
       setClickedOptions([]);
-      const response = await fetch("https://api.pokemontcg.io/v2/cards?fields=name,set.name,set.images.symbol,images.small");
+      const response = await fetch("https://api.pokemontcg.io/v2/cards?select=name,images,set");
       const data = await response.json();
       setApiData(data);
       const randomIndex = Math.floor(Math.random() * data.data.length);
@@ -73,18 +77,15 @@ const fetchSetNameOptions = useMemo(() => {
   return fetchSetNameOptions;
 }, [apiData, cardSet]);
 
+
       
 useEffect(() => {
   if (cardName && apiData) {
       fetchSetNameOptions();
-  }
-}, [cardName, apiData]);
-
-useEffect(() => {
-  if (cardName && apiData) {
       getRandomOptions();
   }
 }, [cardName, apiData]);
+
 
 
     const handleButtonPress = () => {
@@ -99,11 +100,29 @@ useEffect(() => {
       if (option === cardName) {
         setBlurred(false);
         setCorrectCardName(true);
-        setScore(score + 10);
+        const newScore = score + 10;
+        const uid = auth.currentUser.uid;
+        const docRef = doc(db, 'scores', uid);
+        getDoc(docRef).then((docSnapshot) => {
+          if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
+            updateDoc(docRef, { score: newScore });
+          } else {
+            setDoc(docRef, { score: newScore });
+          }
+        });
+        setScore(newScore);
         setCorrectOptionClicked(true); // set the correct option as clicked
       } else if (option === cardSet) {
         setCorrectCardSet(true);
-        setScore(score + 15);
+        const newScore = score + 15;
+        const uid = auth.currentUser.uid;
+        const docRef = doc(db, 'scores', uid);
+        getDoc(docRef).then((docSnapshot) => {
+          if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
+            updateDoc(docRef, { score: newScore });
+          }
+        });
+        setScore(newScore);
         setCorrectOptionClicked(true); // set the correct option as clicked
       } else {
         setIncorrectClicks(incorrectClicks + 1);
@@ -114,6 +133,8 @@ useEffect(() => {
       }
       setClickedOptions([...clickedOptions, option]);
     };
+    
+    
   
     return (
         <div className="pokedex">
@@ -163,7 +184,7 @@ useEffect(() => {
       </div>
     </div>
   ) : (
-    'GUESS THE SET NAME'
+    ''
   )}
 </div>
                             <div className='text-center text-sm flex justify-between'>
