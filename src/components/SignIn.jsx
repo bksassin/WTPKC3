@@ -12,8 +12,7 @@ const googleSignIn = () => {
 const SignIn = () => {
     return (
         <div className="">
-            < GoogleButton onClick={googleSignIn} />
-        </div>
+<GoogleButton onClick={googleSignIn} className="google-button" />        </div>
     )
 }
 

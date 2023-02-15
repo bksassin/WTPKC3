@@ -2,6 +2,7 @@ import React, {useState, useEffect, useMemo} from 'react';
 import {db, auth} from '../firebase';
 import {doc, getDoc, updateDoc, setDoc, onSnapshot, serverTimestamp} from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import SkipButton from '../components/Skip';
 
 
 
@@ -25,6 +26,9 @@ const App = () => {
     const cardBack = require('../assets/card.png'); // with require
     const [user] = useAuthState(auth);
     const [currentScore, setCurrentScore] = useState(0);
+    const [skipCount, setSkipCount] = useState(0);
+    const [skipButtonLabel, setSkipButtonLabel] = useState("");
+    const [loadCardDisabled, setLoadCardDisabled] = useState(true);
 
 
     const fetchData = async () => {
@@ -68,7 +72,7 @@ const App = () => {
 
 const fetchSetNameOptions = useMemo(() => {
   async function fetchSetNameOptions() {
-    setSetNameOptions([]);
+    setSetNameOptions([])
       if (apiData) {
           let setNameOptionList = [];
           while (setNameOptionList.length < 3) {
@@ -109,6 +113,20 @@ useEffect(() => {
 useEffect(() => {
   if (!user) {
     setScore(0);
+  }
+}, [user]);
+
+useEffect(() => {
+  if (user) {
+    const uid = auth.currentUser.uid;
+    const docRef = doc(db, 'scores', uid);
+    onSnapshot(docRef, (doc) => {
+      if (doc.exists()) {
+        const { score } = doc.data();
+        setSkipCount(Math.floor(score / 50));
+        setSkipButtonLabel(`Skips x${Math.floor(score / 50)}`);
+      }
+    });
   }
 }, [user]);
 
@@ -206,40 +224,40 @@ const handleOptionClick = (option) => {
             alt={card.name}
           />
         )}
+        
                             <div className="main-section__black"></div>
                         </div>
                         <div className="left-container__controllers w-full h-20 flex mt-3">
                         <div className="w-1/5">
               {loading ? (
-                <div></div>
+                <div>
+                </div>
               ) : symbolUrl ? (
-                <img src={symbolUrl} alt="symbol" />
+                <img className="h-14" src={symbolUrl} alt="symbol" />
               ) : (
                 <div />
               )}
             </div>
                             <div className="w-full">
                             <div className='text-center text-sm'>
-  {correctCardSet ? (
-    <div className="pop-up">
-      <div className="pop-up-content font-bold text-lg">
-        That's Correct!
-      </div>
-    </div>
-  ) : (
-    ''
-  )}
+
 </div>
                             <div className='text-center text-sm flex justify-between'>
                             {!loading && setNameOptions.length > 0 && incorrectClicks !== 2 && setNameOptions.map((option, index) => (
   <button
     key={index}
-    className={`set-name text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm p-2 m-1 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700${
+    className={`set-name mt-2 w-24 h-16 ml-auto px-1 bg-[#333333] cursor-pointer select-none
+    active:translate-y-2  active:[box-shadow:0_0px_0_0_#333333,0_0px_0_0_#333333]
+    active:border-b-[0px]
+    transition-all duration-150 [box-shadow:0_7px_0_0_#222222]
+    rounded-lg   border-[#222222]${
       incorrectClicks === 1 ? "flash-red" : ""
     }`}
     onClick={() => handleOptionClick(option)}
   >
-    {option}
+    <span className="flex flex-col justify-center h-full text-gray-300 font-semibold">
+      {option}
+    </span>
   </button>
 ))}
                       
@@ -280,19 +298,25 @@ const handleOptionClick = (option) => {
     </div>
   </div>
 )}
-</div>
-                </div>
-                <div className="right-container__buttons flex flex-col mt-10p">
                 {correctCardName && (
-  <div className="pop-up mt-2 text-center">
+  <div className="pop-up mt-1 text-center">
     <div className="pop-up-content font-bold text-lg">
       That's Correct!
     </div>
   </div>
 )}
-<button
-  className={`pokemon-name bg-green-400 mt-5 ${
-    loading ? "cursor-not-allowed opacity-50" : ""
+</div>
+</div>
+<div className="right-container__buttons flex flex-col">
+
+<button className="mt-2 w-36 h-10 mx-auto bg-[#e71d23] cursor-pointer select-none
+    active:translate-y-2  active:[box-shadow:0_0px_0_0_#e71d23,0_0px_0_0_#e71d23]
+    active:border-b-[0px]
+    transition-all duration-150 [box-shadow:0_7px_0_0_#c5151a]
+    rounded-full  border-[1px] border-[#eb4146]">
+<span
+  className={`flex flex-col justify-center items-center h-full text-[#55090b] font-semibold text-lg ${
+    loading ? "cursor-not-allowed " : "Loading..."
   }`}
   disabled={loading}
   onClick={() => {
@@ -304,14 +328,34 @@ const handleOptionClick = (option) => {
   }}
 >
   {incorrectClicks === 2 ? "Restart" : "Load Card"}
+</span>
 </button>
-
-
-
+<div className="flex flex-row">
+{correctCardSet ? (
+    <div className="pop-up mt-5">
+      <div className="pop-up-content font-bold">
+        That's Correct!
+      </div>
+    </div>
+  ) : (
+    ''
+  )}
+<SkipButton
+      skipCount={skipCount}
+      label={skipButtonLabel}
+      onClick={() => {
+        setSkipCount(skipCount - 1);
+        setSkipButtonLabel(`Skips x${skipCount - 1}`);
+        handleButtonPress();
+      }}
+    />
+    </div>
+   
                 </div>
             </div>
         </div>
     );
 };
+
 
 export default App;

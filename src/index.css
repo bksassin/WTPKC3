@@ -13,6 +13,13 @@ body {
   font-family: sans-serif;
   justify-content: center;
   background-color: #192935;
+  
+}
+
+.google-button {
+  width: 200px !important;
+  height: 50px !important;
+  font-size: 14px !important;
 }
 
 .pokedex {

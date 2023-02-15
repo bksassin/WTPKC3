@@ -24,10 +24,10 @@ const Leaderboard = () => {
 
   return (
       <div className='bg-[#253d4f]'>
-    <table className='table-fixed text-sm mt-5'>
+    <table className='table-fixed text-sm mt-2'>
       <thead>
         <tr>
-          <th className=''></th>
+          <th className=''>Pos</th>
           <th className=''>Name</th>
           <th className=''>Score</th>
           <th className=''>Date</th>
