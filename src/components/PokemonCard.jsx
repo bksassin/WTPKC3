@@ -68,6 +68,7 @@ const App = () => {
 
 const fetchSetNameOptions = useMemo(() => {
   async function fetchSetNameOptions() {
+    setSetNameOptions([]);
       if (apiData) {
           let setNameOptionList = [];
           while (setNameOptionList.length < 3) {
@@ -118,71 +119,64 @@ useEffect(() => {
         fetchData();
     };
 
-    const handleOptionClick = (option) => {
-      if (clickedOptions.includes(option)) {
-        return;
-      }
-      if (setNameOptions.includes(option)) {
-        setSetNameOptions([]);
-        if (option === cardSet) {
-          setCorrectCardSet(true);
-          setScore(prevScore => prevScore + 15);
-          setCurrentScore(prevScore => prevScore + 15);
-          if (user) {
-            const newScore = currentScore + 15;
-            const uid = auth.currentUser.uid;
-            const docRef = doc(db, 'scores', uid);
-            getDoc(docRef).then((docSnapshot) => {
-              if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
-                updateDoc(docRef, { score: newScore });
-              }
-            });
+const handleOptionClick = (option) => {
+  if (clickedOptions.includes(option)) {
+    return;
+  }
+  if (setNameOptions.includes(option)) {
+    if (option === cardSet) {
+      setCorrectCardSet(true);
+      setScore(prevScore => prevScore + 15);
+      setCurrentScore(prevScore => prevScore + 15);
+      if (user) {
+        const newScore = currentScore + 15;
+        const uid = auth.currentUser.uid;
+        const docRef = doc(db, 'scores', uid);
+        getDoc(docRef).then((docSnapshot) => {
+          if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
+            updateDoc(docRef, { score: newScore });
           }
-        } else {
-          setIncorrectClicks(incorrectClicks + 1);
-          if (incorrectClicks === 2) {
-            setScore(0);
-            setCurrentScore(0);
-            setIncorrectClicks(0);
-          }
-        }
-        setClickedOptions([...clickedOptions, option]);
-        return;
+        });
       }
-      if (option === cardName) {
-        setBlurred(false);
-        setCorrectCardName(true);
-        setScore(prevScore => prevScore + 10);
-        setCurrentScore(prevScore => prevScore + 10);
-        setCorrectOptionClicked(true);
-        if (user) {
-          const newScore = currentScore + 10;
-          const uid = auth.currentUser.uid;
-          const docRef = doc(db, 'scores', uid);
-          getDoc(docRef).then((docSnapshot) => {
-            if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
-              updateDoc(docRef, { score: newScore });
-            }
-          });
-        }
-      } else {
-        setIncorrectClicks(incorrectClicks + 1);
-        if (incorrectClicks === 2) {
-          setScore(0);
-          setCurrentScore(0);
-          setIncorrectClicks(0);
-        }
+    } else {
+      setIncorrectClicks(incorrectClicks + 1);
+      if (incorrectClicks === 2) {
+        setScore(0);
+        setCurrentScore(0);
+        setIncorrectClicks(0);
       }
-      
-      setClickedOptions([...clickedOptions, option]);
-    };
-    
-    
-    
-    
-    
-    
-    
+    }
+    setClickedOptions([...clickedOptions, option]);
+    return;
+  }
+  if (option === cardName) {
+    setBlurred(false);
+    setCorrectCardName(true);
+    setScore(prevScore => prevScore + 10);
+    setCurrentScore(prevScore => prevScore + 10);
+    setCorrectOptionClicked(true);
+    if (user) {
+      const newScore = currentScore + 10;
+      const uid = auth.currentUser.uid;
+      const docRef = doc(db, 'scores', uid);
+      getDoc(docRef).then((docSnapshot) => {
+        if (docSnapshot.exists() && docSnapshot.data().score < newScore) {
+          updateDoc(docRef, { score: newScore });
+        }
+      });
+    }
+  } else {
+    setIncorrectClicks(incorrectClicks + 1);
+    if (incorrectClicks === 2) {
+      setScore(0);
+      setCurrentScore(0);
+      setIncorrectClicks(0);
+    }
+  }
+  
+  setClickedOptions([...clickedOptions, option]);
+};
+
     
   
     return (
@@ -309,7 +303,7 @@ useEffect(() => {
     }
   }}
 >
-  {incorrectClicks === 2 ? "Restart" : "Load New Card"}
+  {incorrectClicks === 2 ? "Restart" : "Load Card"}
 </button>
 
 

@@ -49,7 +49,7 @@ const Leaderboard = () => {
 )}
       <td className='border px-1 py-2'>{score.name}</td>
       <td className='border px-1 py-2'>{score.score}</td>
-      <td className='border px-1 py-2'>{score && score.date && score.date.toDate().toLocaleString()}</td>
+      <td className='border px-1 py-2'>{score && score.date && score.date.toDate().toLocaleDateString()}</td>
     </tr>
   ))}
 </tbody>
